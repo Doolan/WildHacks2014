@@ -1,0 +1,35 @@
+{
+    "appKeys": {},
+    "capabilities": [
+        ""
+    ],
+    "companyName": "doolansr@rose-hulman.edu",
+    "longName": "WildHacks",
+    "projectType": "native",
+    "resources": {
+        "media": [
+            {
+                "file": "images/minuteButton.png",
+                "name": "MINUTE_BUTTON",
+                "type": "png"
+            },
+            {
+                "file": "images/hourButton.png",
+                "name": "HOUR_BUTTON",
+                "type": "png"
+            },
+            {
+                "file": "images/Background.png",
+                "name": "BACK_GROUND",
+                "type": "png"
+            }
+        ]
+    },
+    "shortName": "WildHacks",
+    "uuid": "6d4cad6d-fd66-4add-9614-aaf4fde16819",
+    "versionCode": 1,
+    "versionLabel": "1.0",
+    "watchapp": {
+        "watchface": false
+    }
+}
