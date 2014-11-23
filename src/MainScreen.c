@@ -13,8 +13,9 @@ Window *cageWindow;
 Window *powerWindow;
 Window *musicWindow;
 
-typedef enum {CLOCK, CAGE, POWER, MUSIC} currentWindow;
-
+typedef enum {CLOCK, CAGE, POWER, MUSIC} WATCHFACE;
+WATCHFACE currentWindow;
+int windowValue;
 //LAYERS 
 Layer *simple_bg_layer;
 Layer *date_layer;
@@ -37,43 +38,6 @@ GBitmap *bacgroundimage;
 GBitmap *hourbuttonimage;
 GBitmap *minutebuttonimage;
 //Music_Window *music;
-/***************************************************************
-*                       Button Listing
-***************************************************************/
-void down_single_click_handler(ClickRecognizerRef recognizer, void *context) {
-  //... called on single click ...
-//  Window *window = (Window *)context;
-  //music = new Music_Window();
-   window_stack_push(cageWindow,true);
-}
-void up_single_click_handler(ClickRecognizerRef recognizer, void *context) {
-  //... called on single click ...
-//  Window *window = (Window *)context;
-  //music = new Music_Window();
-   window_stack_push(musicWindow,true);
-}
-void select_single_click_handler(ClickRecognizerRef recognizer, void *context) {
-  //... called on single click ...
-//  Window *window = (Window *)context;
-  //music = new Music_Window();
-  window_stack_push(powerWindow,true);
-  
-}
-
-void config_provider(Window *window) {
- // single click / repeat-on-hold config:
-  window_single_click_subscribe(BUTTON_ID_DOWN, down_single_click_handler);
-  window_single_click_subscribe(BUTTON_ID_SELECT, select_single_click_handler);
-  window_single_click_subscribe(BUTTON_ID_UP, up_single_click_handler);
-  //window_single_repeating_click_subscribe(BUTTON_ID_SELECT, 1000, select_single_click_handler);
-
-  // multi click config:
- // window_multi_click_subscribe(BUTTON_ID_SELECT, 2, 10, 0, true, select_multi_click_handler);
-
-  // long click config:
- // window_long_click_subscribe(BUTTON_ID_SELECT, 700, select_long_click_handler, select_long_click_release_handler);
-}
-
 
 /***************************************************************
 *                       Time
@@ -135,6 +99,78 @@ static void handle_second_tick(struct tm *tick_time, TimeUnits units_changed) {
   layer_mark_dirty(window_get_root_layer(window));
 }
 
+static void outbox_failed_callback(DictionaryIterator *iterator, AppMessageResult reason, void *context) {
+  APP_LOG(APP_LOG_LEVEL_ERROR, "Outbox send failed!");
+}
+
+static void outbox_sent_callback(DictionaryIterator *iterator, void *context) {
+  APP_LOG(APP_LOG_LEVEL_INFO, "Outbox send success!");
+}
+
+
+/***************************************************************
+*                      Outward Communtion
+***************************************************************/
+
+static void out_handler(DictionaryIterator *iter, void *context) 
+{
+   //do nothing special
+}
+//Register AppMessage events
+void sendButtonPress(int intValue) 
+{
+    app_message_register_outbox_sent(out_handler);
+    app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());    //Largest possible input and output buffer sizes
+  
+    DictionaryIterator *iter;
+    app_message_outbox_begin(&iter);
+    Tuplet value = TupletInteger(1, intValue); //writing placeholder value
+    dict_write_tuplet(iter, &value); 
+    app_message_outbox_send();
+}
+
+/***************************************************************
+*                       Button Listing
+***************************************************************/
+void down_single_click_handler(ClickRecognizerRef recognizer, void *context) {
+  if(currentWindow == CLOCK)
+  {
+    window_stack_push(cageWindow,true);
+    windowValue =0;
+  }
+  else
+     sendButtonPress(windowValue );
+}
+void up_single_click_handler(ClickRecognizerRef recognizer, void *context) {
+  if(currentWindow == CLOCK)
+  {
+    window_stack_push(musicWindow,true);
+    windowValue = 3;
+  } 
+  else
+    sendButtonPress(windowValue+1);
+}
+void select_single_click_handler(ClickRecognizerRef recognizer, void *context) {
+  if(currentWindow == CLOCK)
+  {
+    window_stack_push(powerWindow,true);  
+    windowValue =6;
+  }
+  else
+     sendButtonPress(windowValue+2);
+}
+
+void config_provider(Window *window) {
+ // single click / repeat-on-hold config:
+  window_single_click_subscribe(BUTTON_ID_DOWN, down_single_click_handler);
+  window_single_click_subscribe(BUTTON_ID_SELECT, select_single_click_handler);
+  window_single_click_subscribe(BUTTON_ID_UP, up_single_click_handler);
+  //window_single_repeating_click_subscribe(BUTTON_ID_SELECT, 1000, select_single_click_handler);
+  // multi click config:
+ // window_multi_click_subscribe(BUTTON_ID_SELECT, 2, 10, 0, true, select_multi_click_handler);
+  // long click config:
+ // window_long_click_subscribe(BUTTON_ID_SELECT, 700, select_long_click_handler, select_long_click_release_handler);
+}
 
 
 /***************************************************************
@@ -195,6 +231,8 @@ static void init(void) {
     .load = window_load,
     .unload = window_unload,
   });
+  currentWindow = CLOCK;
+  windowValue=0;
   //Other Windows
   cageWindow = cage_init();  
   powerWindow = power_init();
