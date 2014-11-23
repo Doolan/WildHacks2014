@@ -18,7 +18,7 @@ WATCHFACE currentWindow;
 int windowValue;
 //LAYERS 
 Layer *simple_bg_layer;
-Layer *date_layer;
+//Layer *date_layer;
 Layer *hands_layer;
 BitmapLayer *background;
 
@@ -135,6 +135,7 @@ void sendButtonPress(int intValue)
 void down_single_click_handler(ClickRecognizerRef recognizer, void *context) {
   if(currentWindow == CLOCK)
   {
+    currentWindow = CAGE;
     window_stack_push(cageWindow,true);
     windowValue =0;
   }
@@ -144,6 +145,7 @@ void down_single_click_handler(ClickRecognizerRef recognizer, void *context) {
 void up_single_click_handler(ClickRecognizerRef recognizer, void *context) {
   if(currentWindow == CLOCK)
   {
+    currentWindow = MUSIC;
     window_stack_push(musicWindow,true);
     windowValue = 3;
   } 
@@ -153,6 +155,7 @@ void up_single_click_handler(ClickRecognizerRef recognizer, void *context) {
 void select_single_click_handler(ClickRecognizerRef recognizer, void *context) {
   if(currentWindow == CLOCK)
   {
+    currentWindow = POWER;
     window_stack_push(powerWindow,true);  
     windowValue =6;
   }
@@ -160,11 +163,24 @@ void select_single_click_handler(ClickRecognizerRef recognizer, void *context) {
      sendButtonPress(windowValue+2);
 }
 
+void back_single_click_handler(ClickRecognizerRef recognizer, void *context) {
+  if(currentWindow != CLOCK)
+  {
+    currentWindow = CLOCK;
+    window_stack_pop(true);
+  } 
+  else
+  {
+    window_stack_pop_all(true);
+  }
+}
+
 void config_provider(Window *window) {
  // single click / repeat-on-hold config:
   window_single_click_subscribe(BUTTON_ID_DOWN, down_single_click_handler);
   window_single_click_subscribe(BUTTON_ID_SELECT, select_single_click_handler);
   window_single_click_subscribe(BUTTON_ID_UP, up_single_click_handler);
+  window_single_click_subscribe(BUTTON_ID_BACK, back_single_click_handler);
   //window_single_repeating_click_subscribe(BUTTON_ID_SELECT, 1000, select_single_click_handler);
   // multi click config:
  // window_multi_click_subscribe(BUTTON_ID_SELECT, 2, 10, 0, true, select_multi_click_handler);
@@ -193,8 +209,8 @@ static void window_load(Window *window) {
   bitmap_layer_set_compositing_mode(background, GCompOpAssign);
   layer_add_child(window_layer, bitmap_layer_get_layer(background));
   
-  date_layer = layer_create(bounds);
-  layer_add_child(window_layer, date_layer);
+  ////date_layer = layer_create(bounds);
+ /// layer_add_child(window_layer, date_layer);
   
   /**int tap label
   taps = text_layer_create(GRect(10, 10, 20, 20));
@@ -214,9 +230,8 @@ static void window_load(Window *window) {
 
 static void window_unload(Window *window) {
   layer_destroy(simple_bg_layer);
-  layer_destroy(date_layer);
- // text_layer_destroy(num_label);
- // text_layer_destroy(taps);
+//  layer_destroy(date_layer);
+
   layer_destroy(hands_layer);
   bitmap_layer_destroy(background);
 }
@@ -270,12 +285,13 @@ static void deinit(void) {
 
   for (int i = 0; i < NUM_CLOCK_TICKS; ++i) {
     gpath_destroy(tick_paths[i]);
-  }
-  
+  }  
   tick_timer_service_unsubscribe();
   accel_tap_service_unsubscribe();
   window_destroy(window);
-  cage_deinit();
+  //cage_deinit();
+  //music_deinit();
+  //power_deinit();
 }
 
 /***************************************************************
