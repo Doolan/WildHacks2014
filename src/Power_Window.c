@@ -13,7 +13,9 @@ Layer *simple_bg_layer;
 //MISC
 GBitmap *radioImage;
 
-
+/***************************************************************
+*                      Graphics Misc
+***************************************************************/
 static void power_bg_update_proc(Layer *layer, GContext *ctx) {
   Layer *window_layer = window_get_root_layer(powerWindow);
   GRect bounds = layer_get_bounds(window_layer);
@@ -54,20 +56,20 @@ static void power_window_unload(Window *window) {
 /***************************************************************
 *                       INT and DE INT
 ***************************************************************/
-static void power_init(void) {
+static Window* power_init(void) {
   powerWindow = window_create();
   window_set_window_handlers(powerWindow, (WindowHandlers) {
     .load = power_window_load,
     .unload = power_window_unload,
   });
-
+  return powerWindow;
    // Push the window onto the stack
-  window_stack_push(powerWindow, true);
+   // window_stack_push(powerWindow, true);
 }
 
 
 static void power_deinit(void) {
- window_stack_remove(powerWindow,true);
+ //window_stack_remove(powerWindow,true);
  window_destroy(powerWindow);
 }
 

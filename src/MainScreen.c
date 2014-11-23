@@ -9,8 +9,12 @@
 
 //WINDOWS
 Window *window;
-//Window *Music;
-  
+Window *cageWindow;
+Window *powerWindow;
+Window *musicWindow;
+
+typedef enum {CLOCK, CAGE, POWER, MUSIC} currentWindow;
+
 //LAYERS 
 Layer *simple_bg_layer;
 Layer *date_layer;
@@ -27,9 +31,7 @@ RotBitmapLayer *hourbutton;
 static GPath *tick_paths[NUM_CLOCK_TICKS];
 
 // buffers
-char day_buffer[6];
 char num_buffer[4];
-
 //MISC
 GBitmap *bacgroundimage;
 GBitmap *hourbuttonimage;
@@ -42,44 +44,21 @@ void down_single_click_handler(ClickRecognizerRef recognizer, void *context) {
   //... called on single click ...
 //  Window *window = (Window *)context;
   //music = new Music_Window();
-  cage_init();
-  
+   window_stack_push(cageWindow,true);
 }
 void up_single_click_handler(ClickRecognizerRef recognizer, void *context) {
   //... called on single click ...
 //  Window *window = (Window *)context;
   //music = new Music_Window();
-  music_init();
-  
+   window_stack_push(musicWindow,true);
 }
 void select_single_click_handler(ClickRecognizerRef recognizer, void *context) {
   //... called on single click ...
 //  Window *window = (Window *)context;
   //music = new Music_Window();
-  power_init();
+  window_stack_push(powerWindow,true);
   
 }
-/**
-void select_single_click_handler(ClickRecognizerRef recognizer, void *context) {
- // ... called on single click, and every 1000ms of being held ...
-//  Window *window = (Window *)context;
-}**/
-/**
-void select_multi_click_handler(ClickRecognizerRef recognizer, void *context) {
-//  ... called for multi-clicks ...
-  //Window *window = (Window *)context;
- // const uint16_t count = click_number_of_clicks_counted(recognizer);
-}
-
-void select_long_click_handler(ClickRecognizerRef recognizer, void *context) {
-//  ... called on long click start ...
-//  Window *window = (Window *)context;
-}
-
-void select_long_click_release_handler(ClickRecognizerRef recognizer, void *context) {
-  //... called when long click is released ...
- // Window *window = (Window *)context;
-}**/
 
 void config_provider(Window *window) {
  // single click / repeat-on-hold config:
@@ -94,6 +73,7 @@ void config_provider(Window *window) {
   // long click config:
  // window_long_click_subscribe(BUTTON_ID_SELECT, 700, select_long_click_handler, select_long_click_release_handler);
 }
+
 
 /***************************************************************
 *                       Time
@@ -209,14 +189,22 @@ static void window_unload(Window *window) {
 *                       INT and DE INT
 ***************************************************************/
 static void init(void) {
+  //Build Windows
   window = window_create();
   window_set_window_handlers(window, (WindowHandlers) {
     .load = window_load,
     .unload = window_unload,
   });
-    //button stuff
-   window_set_click_config_provider(window, (ClickConfigProvider) config_provider);
-  day_buffer[0] = '\0';
+  //Other Windows
+  cageWindow = cage_init();  
+  powerWindow = power_init();
+  musicWindow =  music_init(); 
+  //add Listeners to Buttons
+  window_set_click_config_provider(window, (ClickConfigProvider) config_provider);
+  window_set_click_config_provider(cageWindow, (ClickConfigProvider) config_provider);
+  window_set_click_config_provider(powerWindow, (ClickConfigProvider) config_provider);
+  window_set_click_config_provider(musicWindow, (ClickConfigProvider) config_provider);  
+  
   num_buffer[0] = '\0';
 
   hourbuttonimage = gbitmap_create_with_resource(RESOURCE_ID_HOUR_BUTTON);
@@ -224,7 +212,7 @@ static void init(void) {
 
   hourbutton = rot_bitmap_layer_create(hourbuttonimage);
   minutebutton = rot_bitmap_layer_create(minutebuttonimage);
-
+  
   // init clock face paths
   for (int i = 0; i < NUM_CLOCK_TICKS; ++i) {
     tick_paths[i] = gpath_create(&ANALOG_BG_POINTS[i]);
@@ -249,6 +237,7 @@ static void deinit(void) {
   tick_timer_service_unsubscribe();
   accel_tap_service_unsubscribe();
   window_destroy(window);
+  cage_deinit();
 }
 
 /***************************************************************

@@ -9,13 +9,28 @@
     "resources": {
         "media": [
             {
+                "file": "images/nickCage3.png",
+                "name": "NICK_CAGE_3",
+                "type": "png"
+            },
+            {
+                "file": "images/nickCage2.png",
+                "name": "NICK_CAGE_2",
+                "type": "png"
+            },
+            {
+                "file": "images/nickCage1.png",
+                "name": "NICK_CAGE_1",
+                "type": "png"
+            },
+            {
                 "file": "images/Background.png",
                 "name": "BACK_GROUND",
                 "type": "png"
             },
             {
                 "file": "images/nickCage.png",
-                "name": "NICK_CAGE_ONE",
+                "name": "NICK_CAGE",
                 "type": "png"
             },
             {

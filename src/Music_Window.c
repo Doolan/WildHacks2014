@@ -15,6 +15,9 @@ Layer *simple_bg_layer;
 GBitmap *radioImage;
 
 
+/***************************************************************
+*                      Graphics Misc
+***************************************************************/
 static void music_bg_update_proc(Layer *layer, GContext *ctx) {
   Layer *window_layer = window_get_root_layer(musicWindow);
   GRect bounds = layer_get_bounds(window_layer);
@@ -55,21 +58,20 @@ static void music_window_unload(Window *window) {
 /***************************************************************
 *                       INT and DE INT
 ***************************************************************/
-static void music_init(void) {
+static Window* music_init(void) {
   musicWindow = window_create();
   window_set_window_handlers(musicWindow, (WindowHandlers) {
     .load = music_window_load,
     .unload = music_window_unload,
   });
-
+  return musicWindow;
    // Push the window onto the stack
-  const bool animated = true;
-  window_stack_push(musicWindow, true);
+  ///window_stack_push(musicWindow, true);
 }
 
 
 static void music_deinit(void) {
- window_stack_remove(musicWindow,true);
+// window_stack_remove(musicWindow,true);
  window_destroy(musicWindow);
 }
 
