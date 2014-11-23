@@ -9,6 +9,32 @@
     "resources": {
         "media": [
             {
+                "file": "images/Background.png",
+                "name": "BACK_GROUND",
+                "type": "png"
+            },
+            {
+                "file": "images/nickCage.png",
+                "name": "NICK_CAGE_ONE",
+                "type": "png"
+            },
+            {
+                "file": "images/musicImage.png",
+                "name": "MUSIC_IMAGE",
+                "type": "png"
+            },
+            {
+                "file": "images/powerImage.png",
+                "name": "POWER",
+                "type": "png"
+            },
+            {
+                "file": "images/wholeClock.png",
+                "menuIcon": true,
+                "name": "SAMPLE_IMAGE",
+                "type": "png"
+            },
+            {
                 "file": "images/minuteButton.png",
                 "name": "MINUTE_BUTTON",
                 "type": "png"
@@ -16,11 +42,6 @@
             {
                 "file": "images/hourButton.png",
                 "name": "HOUR_BUTTON",
-                "type": "png"
-            },
-            {
-                "file": "images/Background.png",
-                "name": "BACK_GROUND",
                 "type": "png"
             }
         ]

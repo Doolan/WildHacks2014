@@ -1,9 +1,16 @@
 //IMPORTS
 #include "Clock_Analog.h"
+#include <Music_Window.c>
+ #include <Nick_Cage.c>
+#include <Power_Window.c>
 #include "pebble.h"
 #include "string.h"
 #include "stdlib.h"
 
+//WINDOWS
+Window *window;
+//Window *Music;
+  
 //LAYERS 
 Layer *simple_bg_layer;
 Layer *date_layer;
@@ -11,8 +18,8 @@ Layer *hands_layer;
 BitmapLayer *background;
 
 //TEXT LAYERS
-TextLayer *num_label;
-TextLayer *taps;
+//TextLayer *num_label;
+//TextLayer *taps;
 
 //HANDS
 RotBitmapLayer *minutebutton;
@@ -24,11 +31,70 @@ char day_buffer[6];
 char num_buffer[4];
 
 //MISC
-int tapcount = 0;
-Window *window;
 GBitmap *bacgroundimage;
 GBitmap *hourbuttonimage;
 GBitmap *minutebuttonimage;
+//Music_Window *music;
+/***************************************************************
+*                       Button Listing
+***************************************************************/
+void down_single_click_handler(ClickRecognizerRef recognizer, void *context) {
+  //... called on single click ...
+//  Window *window = (Window *)context;
+  //music = new Music_Window();
+  cage_init();
+  
+}
+void up_single_click_handler(ClickRecognizerRef recognizer, void *context) {
+  //... called on single click ...
+//  Window *window = (Window *)context;
+  //music = new Music_Window();
+  music_init();
+  
+}
+void select_single_click_handler(ClickRecognizerRef recognizer, void *context) {
+  //... called on single click ...
+//  Window *window = (Window *)context;
+  //music = new Music_Window();
+  power_init();
+  
+}
+/**
+void select_single_click_handler(ClickRecognizerRef recognizer, void *context) {
+ // ... called on single click, and every 1000ms of being held ...
+//  Window *window = (Window *)context;
+}**/
+/**
+void select_multi_click_handler(ClickRecognizerRef recognizer, void *context) {
+//  ... called for multi-clicks ...
+  //Window *window = (Window *)context;
+ // const uint16_t count = click_number_of_clicks_counted(recognizer);
+}
+
+void select_long_click_handler(ClickRecognizerRef recognizer, void *context) {
+//  ... called on long click start ...
+//  Window *window = (Window *)context;
+}
+
+void select_long_click_release_handler(ClickRecognizerRef recognizer, void *context) {
+  //... called when long click is released ...
+ // Window *window = (Window *)context;
+}**/
+
+void config_provider(Window *window) {
+ // single click / repeat-on-hold config:
+  window_single_click_subscribe(BUTTON_ID_DOWN, down_single_click_handler);
+  window_single_click_subscribe(BUTTON_ID_SELECT, select_single_click_handler);
+  window_single_click_subscribe(BUTTON_ID_UP, up_single_click_handler);
+  //window_single_repeating_click_subscribe(BUTTON_ID_SELECT, 1000, select_single_click_handler);
+
+  // multi click config:
+ // window_multi_click_subscribe(BUTTON_ID_SELECT, 2, 10, 0, true, select_multi_click_handler);
+
+  // long click config:
+ // window_long_click_subscribe(BUTTON_ID_SELECT, 700, select_long_click_handler, select_long_click_release_handler);
+}
+
 /***************************************************************
 *                       Time
 ***************************************************************/
@@ -61,6 +127,8 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
   // second hand
   graphics_context_set_stroke_color(ctx, GColorWhite);
   graphics_draw_line(ctx, secondHand, center);
+  
+  
 /***************************************************************
 *                       rot bitmap layer for the button hands
 ****************************************************************/
@@ -112,7 +180,7 @@ static void window_load(Window *window) {
   date_layer = layer_create(bounds);
   layer_add_child(window_layer, date_layer);
   
-  //int tap label
+  /**int tap label
   taps = text_layer_create(GRect(10, 10, 20, 20));
   text_layer_set_text(taps, "1");
   text_layer_set_background_color(taps, GColorBlack);
@@ -120,18 +188,7 @@ static void window_load(Window *window) {
   GFont norm18 = fonts_get_system_font(FONT_KEY_GOTHIC_18);
   text_layer_set_font(taps, norm18);
   layer_add_child(date_layer, text_layer_get_layer(taps));
-
-  // init num
-  num_label = text_layer_create(GRect(73, 114, 18, 20));
-
-  text_layer_set_text(num_label, num_buffer);
-  text_layer_set_background_color(num_label, GColorBlack);
-  text_layer_set_text_color(num_label, GColorWhite);
-  GFont bold18 = fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD);
-  text_layer_set_font(num_label, bold18);
-
-  layer_add_child(date_layer, text_layer_get_layer(num_label));
-
+**/
   // init hands
   hands_layer = layer_create(bounds);
   layer_set_update_proc(hands_layer, hands_update_proc);
@@ -142,8 +199,8 @@ static void window_load(Window *window) {
 static void window_unload(Window *window) {
   layer_destroy(simple_bg_layer);
   layer_destroy(date_layer);
-  text_layer_destroy(num_label);
-  text_layer_destroy(taps);
+ // text_layer_destroy(num_label);
+ // text_layer_destroy(taps);
   layer_destroy(hands_layer);
   bitmap_layer_destroy(background);
 }
@@ -157,7 +214,8 @@ static void init(void) {
     .load = window_load,
     .unload = window_unload,
   });
-
+    //button stuff
+   window_set_click_config_provider(window, (ClickConfigProvider) config_provider);
   day_buffer[0] = '\0';
   num_buffer[0] = '\0';
 
@@ -177,7 +235,6 @@ static void init(void) {
   window_stack_push(window, animated);
 
   tick_timer_service_subscribe(SECOND_UNIT, handle_second_tick);
-
 }
 
 static void deinit(void) {
