@@ -29,6 +29,7 @@ BitmapLayer *background;
 //HANDS
 RotBitmapLayer *minutebutton;
 RotBitmapLayer *hourbutton;
+RotBitmapLayer *secondbutton;
 static GPath *tick_paths[NUM_CLOCK_TICKS];
 
 // buffers
@@ -37,6 +38,8 @@ char num_buffer[4];
 GBitmap *bacgroundimage;
 GBitmap *hourbuttonimage;
 GBitmap *minutebuttonimage;
+GBitmap *secondbuttonimage;
+DictionaryIterator *iter;
 //Music_Window *music;
 
 /***************************************************************
@@ -57,12 +60,12 @@ static void bg_update_proc(Layer *layer, GContext *ctx) {
 static void hands_update_proc(Layer *layer, GContext *ctx) {
   GRect bounds = layer_get_bounds(layer);
   const GPoint center = grect_center_point(&bounds);
+  /**
   const int16_t secondHandLength = bounds.size.w / 2;
 
   GPoint secondHand;
 
-  time_t now = time(NULL);
-  struct tm *t = localtime(&now);
+  
 
   int32_t second_angle = TRIG_MAX_ANGLE * t->tm_sec / 60;
   secondHand.y = (int16_t)(-cos_lookup(second_angle) * (int32_t)secondHandLength / TRIG_MAX_RATIO) + center.y;
@@ -71,22 +74,27 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
   // second hand
   graphics_context_set_stroke_color(ctx, GColorWhite);
   graphics_draw_line(ctx, secondHand, center);
-  
-  
+  **/
+  time_t now = time(NULL);
+  struct tm *t = localtime(&now);
 /***************************************************************
 *                       rot bitmap layer for the button hands
 ****************************************************************/
   rot_bitmap_set_compositing_mode(hourbutton, GCompOpOr);
   rot_bitmap_set_compositing_mode(minutebutton, GCompOpOr);
+  rot_bitmap_set_compositing_mode(secondbutton, GCompOpOr);
   
   rot_bitmap_set_src_ic(hourbutton, GPoint(17, 14));
   rot_bitmap_set_src_ic(minutebutton, GPoint(17, 14));
+  rot_bitmap_set_src_ic(secondbutton, GPoint(17, 14));
   
   layer_add_child(layer, (Layer*) hourbutton);
   layer_add_child(layer, (Layer*) minutebutton);
+  layer_add_child(layer, (Layer*) secondbutton);
   
   rot_bitmap_layer_set_angle(minutebutton, (TRIG_MAX_ANGLE * t->tm_min / 60+TRIG_MAX_ANGLE/2) % TRIG_MAX_ANGLE);
   rot_bitmap_layer_set_angle(hourbutton, ((TRIG_MAX_ANGLE * (((t->tm_hour % 12) * 6) + (t->tm_min / 10))) / (12 * 6)+TRIG_MAX_ANGLE/2)%TRIG_MAX_ANGLE);
+  rot_bitmap_layer_set_angle(secondbutton, (TRIG_MAX_ANGLE * t->tm_sec / 60) % TRIG_MAX_ANGLE);
   
    // dot in the middle
   graphics_context_set_fill_color(ctx, GColorBlack);
@@ -119,11 +127,7 @@ static void out_handler(DictionaryIterator *iter, void *context)
 //Register AppMessage events
 void sendButtonPress(int intValue) 
 {
-    app_message_register_outbox_sent(out_handler);
-    app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());    //Largest possible input and output buffer sizes
-  
-    DictionaryIterator *iter;
-    app_message_outbox_begin(&iter);
+
     Tuplet value = TupletInteger(1, intValue); //writing placeholder value
     dict_write_tuplet(iter, &value); 
     app_message_outbox_send();
@@ -137,30 +141,30 @@ void down_single_click_handler(ClickRecognizerRef recognizer, void *context) {
   {
     currentWindow = CAGE;
     window_stack_push(cageWindow,true);
-    windowValue =0;
+    windowValue =6;
   }
   else
-     sendButtonPress(windowValue );
+     sendButtonPress(windowValue+2 );
 }
 void up_single_click_handler(ClickRecognizerRef recognizer, void *context) {
   if(currentWindow == CLOCK)
   {
     currentWindow = MUSIC;
     window_stack_push(musicWindow,true);
-    windowValue = 3;
+    windowValue = 0;
   } 
   else
-    sendButtonPress(windowValue+1);
+    sendButtonPress(windowValue+0);
 }
 void select_single_click_handler(ClickRecognizerRef recognizer, void *context) {
   if(currentWindow == CLOCK)
   {
     currentWindow = POWER;
     window_stack_push(powerWindow,true);  
-    windowValue =6;
+    windowValue =3;
   }
   else
-     sendButtonPress(windowValue+2);
+     sendButtonPress(windowValue+1);
 }
 
 void back_single_click_handler(ClickRecognizerRef recognizer, void *context) {
@@ -209,18 +213,6 @@ static void window_load(Window *window) {
   bitmap_layer_set_compositing_mode(background, GCompOpAssign);
   layer_add_child(window_layer, bitmap_layer_get_layer(background));
   
-  ////date_layer = layer_create(bounds);
- /// layer_add_child(window_layer, date_layer);
-  
-  /**int tap label
-  taps = text_layer_create(GRect(10, 10, 20, 20));
-  text_layer_set_text(taps, "1");
-  text_layer_set_background_color(taps, GColorBlack);
-  text_layer_set_text_color(taps, GColorWhite);
-  GFont norm18 = fonts_get_system_font(FONT_KEY_GOTHIC_18);
-  text_layer_set_font(taps, norm18);
-  layer_add_child(date_layer, text_layer_get_layer(taps));
-**/
   // init hands
   hands_layer = layer_create(bounds);
   layer_set_update_proc(hands_layer, hands_update_proc);
@@ -262,10 +254,11 @@ static void init(void) {
 
   hourbuttonimage = gbitmap_create_with_resource(RESOURCE_ID_HOUR_BUTTON);
   minutebuttonimage = gbitmap_create_with_resource(RESOURCE_ID_MINUTE_BUTTON);
+  secondbuttonimage = gbitmap_create_with_resource(RESOURCE_ID_SECOND_HAND);
 
   hourbutton = rot_bitmap_layer_create(hourbuttonimage);
   minutebutton = rot_bitmap_layer_create(minutebuttonimage);
-  
+  secondbutton = rot_bitmap_layer_create(secondbuttonimage);
   // init clock face paths
   for (int i = 0; i < NUM_CLOCK_TICKS; ++i) {
     tick_paths[i] = gpath_create(&ANALOG_BG_POINTS[i]);
@@ -276,10 +269,18 @@ static void init(void) {
   window_stack_push(window, animated);
 
   tick_timer_service_subscribe(SECOND_UNIT, handle_second_tick);
+  
+  //Dictionary Stuff
+   app_message_register_outbox_sent(out_handler);
+   app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());    //Largest possible input and output buffer sizes
+   
+   app_message_outbox_begin(&iter);
 }
 
 static void deinit(void) {
-  
+  cage_deinit();
+  music_deinit();
+  power_deinit();
   rot_bitmap_layer_destroy(minutebutton);
   rot_bitmap_layer_destroy(hourbutton);
 
@@ -289,9 +290,7 @@ static void deinit(void) {
   tick_timer_service_unsubscribe();
   accel_tap_service_unsubscribe();
   window_destroy(window);
-  //cage_deinit();
-  //music_deinit();
-  //power_deinit();
+
 }
 
 /***************************************************************

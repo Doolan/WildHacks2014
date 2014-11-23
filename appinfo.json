@@ -9,6 +9,21 @@
     "resources": {
         "media": [
             {
+                "file": "images/secondHand.png",
+                "name": "SECOND_HAND",
+                "type": "png"
+            },
+            {
+                "file": "images/minuteButton.png",
+                "name": "MINUTE_BUTTON",
+                "type": "png"
+            },
+            {
+                "file": "images/Background.png",
+                "name": "BACK_GROUND",
+                "type": "png"
+            },
+            {
                 "file": "images/nickCage3.png",
                 "name": "NICK_CAGE_3",
                 "type": "png"
@@ -21,11 +36,6 @@
             {
                 "file": "images/nickCage1.png",
                 "name": "NICK_CAGE_1",
-                "type": "png"
-            },
-            {
-                "file": "images/Background.png",
-                "name": "BACK_GROUND",
                 "type": "png"
             },
             {
@@ -47,11 +57,6 @@
                 "file": "images/wholeClock.png",
                 "menuIcon": true,
                 "name": "SAMPLE_IMAGE",
-                "type": "png"
-            },
-            {
-                "file": "images/minuteButton.png",
-                "name": "MINUTE_BUTTON",
                 "type": "png"
             },
             {
